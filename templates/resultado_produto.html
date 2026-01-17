@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhes do Produto</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding-top: 20px;
+            padding-bottom: 50px;
+        }
+        .container {
+            max-width: 1400px;
+        }
+        .product-header {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        .section-title {
+            border-bottom: 3px solid #007bff;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            margin-top: 30px;
+            color: #007bff;
+            font-weight: bold;
+        }
+        .table-responsive {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 15px;
+            margin-bottom: 30px;
+        }
+        .back-btn {
+            margin-bottom: 20px;
+        }
+        .badge-estoque {
+            font-size: 0.9em;
+        }
+        .logo-container {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo {
+            max-width: 300px;
+            height: auto;
+        }
+        .filter-box {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #007bff;
+        }
+        .filter-box h6 {
+            color: #007bff;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        .filter-row {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+        .filter-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        .filter-row .btn {
+            margin-bottom: 0;
+        }
+        .badge-vencido {
+            background-color: #dc3545;
+        }
+        .badge-vencimento-proximo {
+            background-color: #ffc107;
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Logo no topo -->
+        <div class="logo-container">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="logo" onerror="this.style.display='none'">
+        </div>
+
+        <div class="back-btn">
+            <a href="{{ url_for('buscar_produto') }}" class="btn btn-secondary">← Voltar para Busca</a>
+        </div>
+
+        <!-- Cabeçalho do Produto -->
+        <div class="product-header">
+            <div class="row">
+                <div class="col-md-8">
+                    <h3>{{ produto.descricao }}</h3>
+                    <div class="row mt-3">
+                        <div class="col-md-4">
+                            <strong>Código:</strong> {{ produto.codigo }}
+                        </div>
+                        <div class="col-md-8">
+                            <strong>Código EAN:</strong> {{ produto.cod_ean or 'Não informado' }}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-end">
+                    <span class="badge bg-primary badge-estoque">
+                        {% if estoque %}
+                        {{ estoque|length }} local(is) de estoque
+                        {% else %}
+                        Sem estoque
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seção 1: Estoque Atual -->
+        <h4 class="section-title">📦 Estoque Atual</h4>
+
+        {% if estoque %}
+        <div class="table-responsive">
+            <table class="table table-hover table-sm">
+                <thead class="table-light">
+                    <tr>
+                        <th>Lote</th>
+                        <th>Vencimento</th>
+                        <th>Qtd. Física</th>
+                        <th>Qtd. Solicitada</th>
+                        <th>Depósito</th>
+                        <th>Local Físico</th>
+                        <th>Linha</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in estoque %}
+                    <tr>
+                        <td><strong>{{ item.Cod_Lote or '-' }}</strong></td>
+                        <td>
+                            {% if item.Dat_Vencim %}
+                                {% if item.Dat_Vencim < data_atual %}
+                                    <span class="badge badge-vencido">{{ item.Dat_Vencim.strftime('%d/%m/%Y') }}</span>
+                                {% elif (item.Dat_Vencim - data_atual).days <= 30 %}
+                                    <span class="badge badge-vencimento-proximo">{{ item.Dat_Vencim.strftime('%d/%m/%Y') }}</span>
+                                {% else %}
+                                    {{ item.Dat_Vencim.strftime('%d/%m/%Y') }}
+                                {% endif %}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>{{ "%.2f"|format(item.Qtd_Fisico) }}</td>
+                        <td>{{ "%.2f"|format(item.Qtd_Solicitado) }}</td>
+                        <td>{{ item.Deposito }}</td>
+                        <td>{{ item.Loc_Fis }}</td>
+                        <td>{{ item.Linha or '-' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-warning">
+            ⚠️ Não há estoque disponível para este produto.
+        </div>
+        {% endif %}
+
+        <!-- Seção 2: Últimas Entradas com Filtro de Data -->
+        <h4 class="section-title">📋 Últimas Entradas (Notas Fiscais)</h4>
+
+        <!-- Filtro de Data -->
+        <div class="filter-box">
+            <h6>🔍 Filtrar por Data de Entrada</h6>
+            <form method="POST" class="filter-row">
+                <div class="form-group">
+                    <label for="data_inicio" class="form-label">Data Inicial:</label>
+                    <input type="date" class="form-control" id="data_inicio" name="data_inicio" 
+                           value="{{ data_inicio }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="data_fim" class="form-label">Data Final:</label>
+                    <input type="date" class="form-control" id="data_fim" name="data_fim" 
+                           value="{{ data_fim }}" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Filtrar</button>
+            </form>
+            <small class="text-muted d-block mt-2">
+                Exibindo entradas de <strong>{{ data_inicio_display }}</strong> até <strong>{{ data_fim_display }}</strong>
+            </small>
+        </div>
+
+        {% if entradas %}
+        <div class="table-responsive">
+            <table class="table table-hover table-sm">
+                <thead class="table-light">
+                    <tr>
+                        <th>Data Movimento</th>
+                        <th>Número NF</th>
+                        <th>Tipo NF</th>
+                        <th>Emitente</th>
+                        <th>Quantidade</th>
+                        <th>Bonificação</th>
+                        <th>Lote</th>
+                        <th>Apresentação</th>
+                        <th>Qtd. c/ Apr.</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entrada in entradas %}
+                    <tr>
+                        <td>
+                            {% if entrada.Dat_Movimento %}
+                            <strong>{{ entrada.Dat_Movimento.strftime('%d/%m/%Y %H:%M') }}</strong>
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td>{{ entrada.Numero }}</td>
+                        <td>
+                            {% if entrada.Tip_NF == 'C' %}
+                                <span class="badge bg-success">Compra</span>
+                            {% else %}
+                                {{ entrada.Tip_NF }}
+                            {% endif %}
+                        </td>
+                        <td>{{ entrada.C_DesEmitente }}</td>
+                        <td>{{ "%.2f"|format(entrada.C_Quantidade) }}</td>
+                        <td>{{ entrada.Qtd_Bonificacao or 0 }}</td>
+                        <td>{{ entrada.Cod_Lote or '-' }}</td>
+                        <td>{{ entrada.C_DesApr or '-' }}</td>
+                        <td>{{ "%.2f"|format(entrada.Qtd_ComApr) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            ℹ️ Não foram encontradas entradas para este produto no período de <strong>{{ data_inicio_display }}</strong> a <strong>{{ data_fim_display }}</strong>.
+        </div>
+        {% endif %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
