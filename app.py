@@ -347,4 +347,5 @@ if __name__ == '__main__':
         with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
             f.write('{}')
 
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    # ALTERADO: Porta mudada de 5000 para 5001
+    app.run(debug=True, host='0.0.0.0', port=5001)
