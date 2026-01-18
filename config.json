@@ -1,6 +1,6 @@
 {
     "database": {
-        "server": "ARTENIOREIS",
+        "server": "localhost",
         "database": "DMD",
         "username": "sa",
         "password": "arte171721"
