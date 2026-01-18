@@ -8,39 +8,11 @@
     <style>
         body {
             background-color: #f8f9fa;
-            padding-top: 20px;
+            padding-top: 30px;
             padding-bottom: 50px;
         }
         .container {
-            max-width: 1400px;
-        }
-        .product-header {
-            background-color: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
-        }
-        .section-title {
-            border-bottom: 3px solid #007bff;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-            margin-top: 30px;
-            color: #007bff;
-            font-weight: bold;
-        }
-        .table-responsive {
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            padding: 15px;
-            margin-bottom: 30px;
-        }
-        .back-btn {
-            margin-bottom: 20px;
-        }
-        .badge-estoque {
-            font-size: 0.9em;
+            max-width: 1200px;
         }
         .logo-container {
             text-align: center;
@@ -50,10 +22,66 @@
             max-width: 300px;
             height: auto;
         }
-        .filter-box {
+        .search-box {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        .product-card {
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .product-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        .back-btn {
+            margin-bottom: 20px;
+        }
+        .table-responsive {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 15px;
+            margin-bottom: 30px;
+        }
+        .table-responsive h5 {
+            color: #007bff;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        .table-sm td {
+            padding: 10px;
+            font-size: 0.95em;
+        }
+        .table-sm th {
             background-color: #f8f9fa;
+            font-weight: bold;
+            padding: 12px 10px;
+            font-size: 0.9em;
+        }
+        .table-hover tbody tr:hover {
+            background-color: rgba(0, 123, 255, 0.05);
+        }
+        .alert {
+            border-radius: 10px;
+            border: none;
+        }
+        .section-title {
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            margin-top: 30px;
+            color: #007bff;
+            font-weight: bold;
+        }
+        .filter-box {
+            background-color: white;
             padding: 15px;
             border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             margin-bottom: 20px;
             border-left: 4px solid #007bff;
         }
@@ -74,12 +102,63 @@
         .filter-row .btn {
             margin-bottom: 0;
         }
+        .product-header {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        .product-header h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+        .product-info-row {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+        .product-info-item {
+            flex: 1;
+            min-width: 200px;
+        }
+        .product-info-label {
+            font-weight: bold;
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+        .product-info-value {
+            color: #212529;
+            font-size: 1em;
+            margin-top: 5px;
+        }
+        .badge-estoque {
+            font-size: 0.9em;
+        }
         .badge-vencido {
             background-color: #dc3545;
         }
         .badge-vencimento-proximo {
             background-color: #ffc107;
             color: #000;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 15px;
+            }
+            .logo {
+                max-width: 250px;
+            }
+            .table-responsive {
+                padding: 10px;
+            }
+            .filter-row {
+                flex-direction: column;
+            }
+            .filter-row .form-group {
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -91,24 +170,24 @@
         </div>
 
         <div class="back-btn">
-            <a href="{{ url_for('buscar_produto') }}" class="btn btn-secondary">← Voltar para Busca</a>
+            <a href="{{ url_for('buscar_produto') }}" class="btn btn-secondary">Voltar para Busca</a>
         </div>
 
         <!-- Cabeçalho do Produto -->
         <div class="product-header">
-            <div class="row">
-                <div class="col-md-8">
-                    <h3>{{ produto.descricao }}</h3>
-                    <div class="row mt-3">
-                        <div class="col-md-4">
-                            <strong>Código:</strong> {{ produto.codigo }}
-                        </div>
-                        <div class="col-md-8">
-                            <strong>Código EAN:</strong> {{ produto.cod_ean or 'Não informado' }}
-                        </div>
-                    </div>
+            <h3>{{ produto.descricao }}</h3>
+            <div class="product-info-row">
+                <div class="product-info-item">
+                    <div class="product-info-label">Código</div>
+                    <div class="product-info-value">{{ produto.codigo }}</div>
                 </div>
-                <div class="col-md-4 text-end">
+                <div class="product-info-item">
+                    <div class="product-info-label">Código de Barras</div>
+                    <div class="product-info-value">{{ produto.cod_ean or 'Não informado' }}</div>
+                </div>
+            </div>
+            <div class="product-info-row">
+                <div class="product-info-item">
                     <span class="badge bg-primary badge-estoque">
                         {% if estoque %}
                         {{ estoque|length }} local(is) de estoque
@@ -121,7 +200,7 @@
         </div>
 
         <!-- Seção 1: Estoque Atual -->
-        <h4 class="section-title">📦 Estoque Atual</h4>
+        <h4 class="section-title">Estoque Atual</h4>
 
         {% if estoque %}
         <div class="table-responsive">
@@ -166,16 +245,16 @@
         </div>
         {% else %}
         <div class="alert alert-warning">
-            ⚠️ Não há estoque disponível para este produto.
+            Não há estoque disponível para este produto.
         </div>
         {% endif %}
 
-        <!-- Seção 2: Últimas Entradas com Filtro de Data -->
-        <h4 class="section-title">📋 Últimas Entradas (Notas Fiscais)</h4>
+        <!-- Seção 2: Últimas Entradas -->
+        <h4 class="section-title">Últimas Entradas (Notas Fiscais)</h4>
 
         <!-- Filtro de Data -->
         <div class="filter-box">
-            <h6>🔍 Filtrar por Data de Entrada</h6>
+            <h6>Filtrar por Data de Entrada</h6>
             <form method="POST" class="filter-row">
                 <div class="form-group">
                     <label for="data_inicio" class="form-label">Data Inicial:</label>
@@ -243,7 +322,7 @@
         </div>
         {% else %}
         <div class="alert alert-info">
-            ℹ️ Não foram encontradas entradas para este produto no período de <strong>{{ data_inicio_display }}</strong> a <strong>{{ data_fim_display }}</strong>.
+            Não foram encontradas entradas para este produto no período de {{ data_inicio_display }} a {{ data_fim_display }}.
         </div>
         {% endif %}
     </div>
